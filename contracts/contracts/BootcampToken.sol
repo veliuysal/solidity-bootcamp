@@ -18,6 +18,9 @@ contract BootcampToken {
     // An address type variable is used to store ethereum accounts.
     address public owner;
 
+    // A flag to keep track of reentrancy status
+    bool private reentrancyLock = false;
+
     // A mapping is a key/value map. Here we store each account's balance.
     mapping(address => uint256) balances;
 
@@ -35,13 +38,22 @@ contract BootcampToken {
         owner = msg.sender;
     }
 
+    // This modifier helps prevent reentrancy attacks
+    modifier nonReentrant() {
+        require(!reentrancyLock, "Reentrant call detected!");
+        reentrancyLock = true;
+        _;
+        reentrancyLock = false;
+    }
+
     /**
      * A function to transfer tokens.
      *
      * The `external` modifier makes a function *only* callable from *outside*
      * the contract.
      */
-    function transfer(address to, uint256 amount) external {
+    // nonReentrant modifier helps prevent reentrancy attacks
+    function transfer(address to, uint256 amount) external nonReentrant {
         // Check if the transaction sender has enough tokens.
         // If `require`'s first argument evaluates to `false` then the
         // transaction will revert.
